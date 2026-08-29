@@ -6,6 +6,14 @@
 > 📄 **项目文档**：[检索质量与性能优化报告](docs/项目优化报告.md)（含真实评测数据 hit@1=100%/MRR=100% 与完整复现步骤）｜
 > 📚 **评测知识库**：`backend/data/interview_kb/`（22 篇中文技术文档 / 3 个知识库）
 
+## 界面预览
+
+![智能问答](docs/screenshots/02-chat-qa.png)
+
+![文档管理](docs/screenshots/03-documents.png) ![知识库管理](docs/screenshots/04-knowledge.png)
+
+![简历分析](docs/screenshots/05-resume.png)
+
 ## 技术栈
 
 | 层级 | 技术选型 |
