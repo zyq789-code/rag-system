@@ -28,7 +28,7 @@
             skill.level === 'expert' ? 'bg-emerald-100 text-emerald-700' :
             skill.level === 'intermediate' ? 'bg-blue-100 text-blue-700' :
             'bg-gray-200 text-gray-600'
-          ]">{{ { expert: '精通', intermediate: '熟练', beginner: '入门' }[skill.level] || skill.level }}</span>
+          ]">{{ { expert: '精通', intermediate: '熟练', beginner: '入门' }[skill.level as 'expert' | 'intermediate' | 'beginner'] || skill.level }}</span>
         </div>
       </div>
     </div>
@@ -84,7 +84,7 @@
                 q.difficulty === 'hard' ? 'bg-red-50 text-red-600' :
                 q.difficulty === 'medium' ? 'bg-yellow-50 text-yellow-600' :
                 'bg-green-50 text-green-600'
-              ]">{{ { hard: '困难', medium: '中等', easy: '简单' }[q.difficulty] || q.difficulty }}</span>
+              ]">{{ { hard: '困难', medium: '中等', easy: '简单' }[q.difficulty as 'hard' | 'medium' | 'easy'] || q.difficulty }}</span>
             </div>
           </div>
           <!-- 答案 -->

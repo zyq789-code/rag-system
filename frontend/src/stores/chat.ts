@@ -28,14 +28,14 @@ export const useChatStore = defineStore('chat', () => {
 
     await streamSend(
       content,
-      currentConversationId.value || undefined,
-      kbId,
       (token) => { messages.value[idx].content += token },
       (sources) => { messages.value[idx].sources = sources },
       (convId) => {
         currentConversationId.value = convId
         loadConversations()
       },
+      currentConversationId.value || undefined,
+      kbId,
       (errMsg) => {
         messages.value[idx].content = `请求失败: ${errMsg}`
       },

@@ -7,11 +7,11 @@ export function useStreaming() {
 
   async function sendMessage(
     content: string,
-    conversationId?: string,
-    kbId?: string,
     onToken: (token: string) => void,
     onSources: (sources: SourceCitation[]) => void,
     onDone: (convId: string) => void,
+    conversationId?: string,
+    kbId?: string,
     onError?: (err: string) => void,
   ) {
     isStreaming.value = true
