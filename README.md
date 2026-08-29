@@ -3,6 +3,9 @@
 基于 RAG（Retrieval-Augmented Generation）架构的企业级智能知识库问答系统，支持多格式文档解析、
 语义检索、流式输出、多知识库管理、简历 AI 分析等功能。
 
+> 📄 **项目文档**：[检索质量与性能优化报告](docs/项目优化报告.md)（含真实评测数据 hit@1=100%/MRR=100% 与完整复现步骤）｜
+> 📚 **评测知识库**：`backend/data/interview_kb/`（22 篇中文技术文档 / 3 个知识库）
+
 ## 技术栈
 
 | 层级 | 技术选型 |
@@ -13,9 +16,9 @@
 | **关系数据库** | PostgreSQL 16 |
 | **任务队列** | Celery + Redis 7 |
 | **LLM** | DeepSeek / OpenAI（多服务商适配器） |
-| **文档解析** | pypdf + python-docx |
+| **文档解析** | pypdf + python-docx + jieba（检索分词） |
 | **Embedding** | BGE-small-zh-v1.5（中文优化） |
-| **重排序** | cross-encoder/ms-marco-MiniLM-L-6-v2 |
+| **重排序** | maidalun1020/bce-reranker-base_v1（中文优化） |
 
 ## 系统架构
 
@@ -66,7 +69,7 @@ rag-system/
 ├── backend/
 │   ├── main.py                  # FastAPI 入口
 │   ├── requirements.txt
-│   ├── run_worker.py            # Celery Worker 启动脚本
+│   ├── Celery.py                 # Celery Worker 启动脚本（Windows）
 │   ├── Dockerfile
 │   │
 │   ├── core/                    # 核心配置
@@ -97,6 +100,7 @@ rag-system/
 │   │
 │   ├── services/                # 业务逻辑
 │   │   ├── rag_service.py       # RAG 问答核心
+│   │   ├── bm25.py              # BM25 检索（jieba 分词 + 索引缓存）
 │   │   ├── document_service.py
 │   │   ├── knowledge_service.py
 │   │   ├── resume_service.py
@@ -124,16 +128,21 @@ rag-system/
 │   │   ├── knowledge.py
 │   │   └── resume.py
 │   │
-│   └── tests/                   # 测试
-│       ├── test_models.py
-│       ├── test_schemas.py
-│       ├── test_repositories.py
-│       ├── test_llm.py
-│       ├── test_integrations.py
-│       ├── test_chunking.py
-│       ├── test_rag.py
-│       ├── test_document_service.py
-│       └── conftest.py
+│   ├── tests/                   # 测试
+│   │   ├── test_models.py
+│   │   ├── test_schemas.py
+│   │   ├── test_repositories.py
+│   │   ├── test_llm.py
+│   │   ├── test_integrations.py
+│   │   ├── test_chunking.py
+│   │   ├── test_rag.py
+│   │   ├── test_bm25.py
+│   │   └── test_document_service.py
+│   │
+│   └── scripts/                 # 评测与基准
+│       ├── benchmark_retrieval.py   # 离线检索基准（jieba vs 旧 BM25）
+│       ├── evaluate_rag.py          # 在线 RAG 评测（hit@k / MRR）
+│       └── eval_questions.example.json
 │
 ├── frontend/
 │   ├── index.html
@@ -332,7 +341,7 @@ CREATE TABLE resume_analyses (
 用户提问
   → 混合检索：
      ├── 向量检索 (top_k=20)
-     └── BM25 关键词检索 (top_k=20)
+     └── BM25 关键词检索（jieba 分词, top_k=20）
   → RRF 融合 (Reciprocal Rank Fusion)
   → 按文本去重
   → Cross-Encoder 重排序 → top 5
@@ -356,9 +365,9 @@ class LLMProvider(ABC):
 | 优化项 | 说明 |
 |--------|------|
 | 模型预加载 | Embedding 和 Reranker 模型在启动时预加载 |
-| 混合检索 | 向量 + BM25 并行执行 |
+| 混合检索并行 | 向量 + BM25 用 asyncio.gather 并行执行 |
+| BM25 中文分词 + 索引缓存 | jieba 分词；语料与索引按版本号缓存，文档变更才重建 |
 | 低 Temperature | Temperature=0.1，输出更稳定 |
-| 混合检索并行 | 向量与 BM25 并行执行 |
 
 ## 快速开始
 
@@ -393,10 +402,10 @@ uvicorn main:app --reload --port 8080
 ### 3. Celery Worker
 
 ```bash
-# 新终端
+# 新终端（Windows 必须用 Celery.py，避免终端编码问题）
 cd backend
 venv\Scripts\activate
-python run_worker.py
+python Celery.py
 ```text
 
 ### 4. 前端
@@ -443,7 +452,7 @@ CHROMA_PORT=8001
 
 # Embedding
 EMBEDDING_MODEL=BAAI/bge-small-zh-v1.5
-RERANKER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
+RERANKER_MODEL=maidalun1020/bce-reranker-base_v1
 
 # App
 UPLOAD_DIR=./uploads
@@ -496,7 +505,7 @@ Celery Worker 未启动。另开终端运行：
 ```bash
 cd backend
 venv\Scripts\activate
-python run_worker.py
+python Celery.py
 ```text
 
 ### 如何切换 LLM 提供商？
@@ -520,17 +529,21 @@ OPENAI_API_KEY=sk-xxx
 ```bash
 cd backend
 venv\Scripts\activate
+pip install -r requirements-dev.txt   # 测试依赖（pytest / pytest-asyncio / aiosqlite）
 pytest tests/ -v
 ```bash
 
 | 测试文件 | 测试内容 |
 |---------|---------|
 | `test_rag.py` | RAG 搜索与提示构建 |
+| `test_bm25.py` | 中文 BM25 分词与索引缓存 |
 | `test_llm.py` | LLM 适配器 |
 | `test_chunking.py` | 文本分块 |
 | `test_models.py` | ORM 模型 |
 | `test_schemas.py` | Pydantic 验证 |
 | `test_repositories.py` | 数据访问层 |
+
+检索质量与性能的量化评测见 `backend/scripts/README.md`（离线基准 + 在线 hit@k/MRR 评测）。
 
 ---
 

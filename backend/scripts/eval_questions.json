@@ -1,0 +1,32 @@
+{
+    "_说明": "面试知识库评测问题集。expected.keyword 匹配检索文本包含该关键词即命中；覆盖三个知识库。拒答演示问题见文件末尾 _refusal_demo（用于面试时手动提问验证系统会明确说'没找到'，不参与 hit@k 统计）。",
+    "questions": [
+        {"question": "什么是缓存穿透、击穿、雪崩？", "expected": {"keyword": "缓存雪崩"}},
+        {"question": "Redis 的 RDB 和 AOF 有什么区别？", "expected": {"keyword": "AOF"}},
+        {"question": "Redis 分布式锁怎么实现？要注意什么？", "expected": {"keyword": "分布式锁"}},
+        {"question": "MySQL 索引为什么用 B+ 树？", "expected": {"keyword": "B+ 树"}},
+        {"question": "MySQL 有哪些事务隔离级别？", "expected": {"keyword": "隔离级别"}},
+        {"question": "怎么定位和优化慢查询？", "expected": {"keyword": "EXPLAIN"}},
+        {"question": "如何保证消息不丢失？", "expected": {"keyword": "消息不丢失"}},
+        {"question": "消息重复消费怎么处理？", "expected": {"keyword": "幂等"}},
+        {"question": "分布式事务有哪些主流方案？", "expected": {"keyword": "TCC"}},
+        {"question": "JVM 的运行时数据区有哪些？", "expected": {"keyword": "运行时数据区"}},
+        {"question": "线程池的核心参数怎么设置？", "expected": {"keyword": "corePoolSize"}},
+        {"question": "什么是 CAP 定理？", "expected": {"keyword": "CAP"}},
+        {"question": "RAG 的完整流程是怎样的？", "expected": {"keyword": "检索增强生成"}},
+        {"question": "文本向量化模型怎么选？", "expected": {"keyword": "Embedding"}},
+        {"question": "为什么要用混合检索和重排序？", "expected": {"keyword": "RRF"}},
+        {"question": "怎么设计一个好的 Prompt？", "expected": {"keyword": "Few-shot"}},
+        {"question": "LLM 为什么会产生幻觉？怎么缓解？", "expected": {"keyword": "幻觉"}},
+        {"question": "长文档为什么要分块？分块要注意什么？", "expected": {"keyword": "分块"}},
+        {"question": "你的 RAG 项目整体架构是怎样的？", "expected": {"keyword": "双数据库引擎"}},
+        {"question": "你的 RAG 项目做了哪些检索优化？", "expected": {"keyword": "hit@1"}},
+        {"question": "秒杀系统怎么防止超卖？", "expected": {"keyword": "超卖"}},
+        {"question": "资产管理系统有哪些核心模块？", "expected": {"keyword": "审批"}}
+    ],
+    "_refusal_demo": [
+        "Linux 内核的中断下半部机制是什么？",
+        "Kubernetes 的调度器怎么实现抢占？",
+        "如何用 D3.js 画力导向图？"
+    ]
+}
