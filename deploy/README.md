@@ -132,7 +132,7 @@ docker compose -f docker-compose.yml -f deploy/docker-compose.deploy.yml down -v
 | `Models loaded` 前崩溃，报连不上 huggingface.co | 模型缓存没挂载进容器 → 重跑 `prepare_models.sh`，确认 `docker-compose.deploy.yml` 用了 `-f` |
 | 上传文档一直 pending | Celery 容器没起或挂了 → `docker compose ps` 看 celery |
 | 提问报 500 / 数据库错误 | 没跑迁移 → Step 5 的 `alembic upgrade head` |
-| 构建很慢 | 大陆镜像源：确认 `setup_server.sh` 的 daemon.json 生效（`docker info` 看 registry-mirrors）|
+| 构建很慢 / 镜像拉不下来 | 大陆 Docker Hub 源经常失效：`setup_server.sh` 已配好 `docker.1panel.live` 等加速源，改 daemon.json 后**必须 `systemctl restart docker`**；`docker info` 看 registry-mirrors 是否生效 |
 | 镜像构建 pip 失败 | 确认用的是 `--build-arg PIP_INDEX_URL` 默认阿里云源，或换 `https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple` |
 | 想换端口 | 前端端口改 compose 里 `frontend` 的 `"3000:80"` 左侧；需同时改安全组 |
 

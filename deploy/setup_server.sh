@@ -18,9 +18,9 @@ mkdir -p /etc/docker
 cat > /etc/docker/daemon.json <<'EOF'
 {
   "registry-mirrors": [
+    "https://docker.1panel.live",
     "https://docker.m.daocloud.io",
-    "https://docker.1ms.run",
-    "https://dockerproxy.net"
+    "https://docker.1ms.run"
   ]
 }
 EOF
