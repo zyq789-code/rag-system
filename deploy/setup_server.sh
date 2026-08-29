@@ -25,8 +25,10 @@ cat > /etc/docker/daemon.json <<'EOF'
 }
 EOF
 
-echo "==> [4/4] 启动 Docker 并开机自启..."
+echo "==> [4/4] 启动 Docker 并重载配置..."
 systemctl enable --now docker
+# 关键：daemon.json 在 docker 运行后修改，必须 restart 才加载镜像加速
+systemctl restart docker
 sleep 2
 
 echo ""
