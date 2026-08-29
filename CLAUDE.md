@@ -72,6 +72,7 @@ Docker 一键部署：`docker-compose up --build`（宿主机 backend=8000，ngi
 
 ## 坑
 
+- **ChromaDB 必须用 Server 模式，不能嵌入式**：backend 和 Celery 是**两个进程**都读写向量库，嵌入式数据跟着进程走会导致**数据分裂**（Celery 入库的文档后端搜不到）。别改成嵌入式，也别让两个进程共享同一 `.chroma` 目录（SQLite 并发写会锁冲突）。详见知识库 `03_项目经验/01_本RAG项目架构设计.md`。
 - **HuggingFace 模型必须离线加载（本机特性）**：本机 `HF_ENDPOINT=https://hf-mirror.com`，但镜像对 python 客户端（huggingface_hub 0.36.x）做 TLS 指纹拦截——库下载一律被重定向到被墙的 huggingface.co 失败，curl 却能下。已用 curl 手动下载 embedding（BGE-small-zh）与重排（bce-reranker-base_v1）模型到 `~/.cache/huggingface/hub/`，靠 `HF_HUB_OFFLINE=1` + `TRANSFORMERS_OFFLINE=1` 离线加载（加载约 2s）。`run.bat`/`runCelery.bat` 已内置这两个 env；**手动跑 uvicorn 必须带上**。这些变量**不要写进 `.env`**——会触发 pydantic `extra_forbidden`，且 `.env` 会被 Docker 当 env_file 透传导致容器离线失败。缓存结构注意：`refs/main` 必须**无换行符**（`printf` 写，`echo` 会带 `\n` 导致找不到快照），快照目录用 `snapshots/<commit_sha>/`。
 - **本地端口已对齐 8080**：`run.bat`/README 与 `frontend/vite.config.ts` 代理都是 8080。Docker 部署走 8000 内网（nginx 转发）。CORS 白名单仅 3000/5173。
 - **`.env` 在仓库根目录**：`core/config.py` 用 `load_dotenv(override=True)` 强制加载并覆盖系统环境变量；改 `Settings` 字段须同步 `.env` 键名。`.env` 含 API Key，勿提交。
