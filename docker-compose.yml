@@ -18,7 +18,8 @@ services:
       - redisdata:/data
 
   chromadb:
-    image: chromadb/chroma:latest
+    # 必须与 backend 的 chromadb==0.6.3 客户端匹配；latest 会因集合配置格式不兼容导致 KeyError: '_type'
+    image: chromadb/chroma:0.6.3
     ports:
       - "8001:8000"
     volumes:
