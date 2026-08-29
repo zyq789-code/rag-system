@@ -51,7 +51,7 @@ Docker 一键部署：`docker-compose up --build`（宿主机 backend=8000，ngi
 
 **双数据库**：API 用 async engine（`Depends(get_db)`），Celery 用 sync `SyncSession`。Repository 里 async/sync 方法并存，别混用。
 
-**RAG 链路**（`services/rag_service.py`）：向量 + BM25 并行 → 过滤 score≥0.3 → RRF(k=60) → 前 100 字符去重 → 中文重排 top5（`maidalun1020/bce-reranker-base_v1`，原英文 cross-encoder 对中文打分失效已被替换）→ 拼 prompt(系统提示 + 带文件名标注的上下文 + 最近 6 条历史) → LLM 流式。BM25 在 `services/bm25.py`：jieba 中文分词，索引按 `VectorStore.texts_revision` 缓存、文档变更自动重建。评测脚本见 `scripts/`（真实库 hit@1=100%/MRR=100%，22 问）。
+**RAG 链路**（`services/rag_service.py`）：向量 + BM25 并行 → 过滤 score≥0.3 → RRF(k=60) → 前 100 字符去重 → 中文重排 top5（`maidalun1020/bce-reranker-base_v1`，原英文 cross-encoder 对中文打分失效已被替换）→ 拼 prompt(系统提示 + 带文件名标注的上下文 + 最近 6 条历史) → LLM 流式。BM25 在 `services/bm25.py`：jieba 中文分词，索引按 `VectorStore.texts_revision` 缓存、文档变更自动重建。分块在 `services/chunking.py`：**结构感知**（段落/标题/代码块/表格）+ tiktoken 精确 overlap + 块级校验。评测脚本见 `scripts/`（真实库 hit@1≈91%/MRR≈93%，22 问，详见 `docs/项目优化报告.md`）。
 
 **SSE 契约**（`routers/chat.py` ↔ `composables/useStreaming.ts`）：逐行发 `data: {json}\n\n`，固定顺序 `sources` → 多个 `token` → `done`。改流格式必须两端同步。
 
