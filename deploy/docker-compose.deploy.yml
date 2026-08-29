@@ -1,6 +1,11 @@
-# 大陆 ECS 部署专用覆盖：挂载宿主 HF 模型缓存 + 强制离线加载
+# 大陆 ECS 部署专用覆盖：挂载宿主 HF 模型缓存 + 强制离线加载 + Basic Auth 访问口令
 # 用法：docker compose -f docker-compose.yml -f deploy/docker-compose.deploy.yml up -d --build
-# 前置：先运行 deploy/prepare_models.sh 把模型下载到 ${HF_CACHE_DIR:-$HOME/.cache/huggingface}
+# 前置：
+#   1. 先运行 deploy/prepare_models.sh 把模型下载到 ${HF_CACHE_DIR:-$HOME/.cache/huggingface}
+#   2. 先创建访问口令文件（否则 nginx 无法校验会 500）：
+#        sudo apt-get install -y apache2-utils
+#        sudo htpasswd -c /etc/nginx/rag.htpasswd demo
+#   3. 若不想加口令，删除下方 frontend 整段即可
 
 services:
   backend:
@@ -16,3 +21,10 @@ services:
     environment:
       HF_HUB_OFFLINE: "1"
       TRANSFORMERS_OFFLINE: "1"
+
+  frontend:
+    volumes:
+      # 带 Basic Auth 的 nginx 配置（覆盖镜像内默认配置）
+      - ./deploy/nginx.auth.conf:/etc/nginx/conf.d/default.conf:ro
+      # 访问口令文件（宿主 /etc/nginx/rag.htpasswd，需先创建）
+      - /etc/nginx/rag.htpasswd:/etc/nginx/rag.htpasswd:ro
