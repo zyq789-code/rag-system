@@ -125,7 +125,9 @@ class RAGService:
                 deduped.append(doc)
 
         # 4. Cross-Encoder 重排
-        reranked = await self.reranker.rerank(query, deduped, top_k=self.settings.top_k_rerank)
+        # 候选已按 RRF 相关度排序，重排只精排前 15 个即可（CPU 上重排是主要耗时，
+        # 截断候选能显著降延迟，对 top5 命中影响极小）
+        reranked = await self.reranker.rerank(query, deduped[:15], top_k=self.settings.top_k_rerank)
         return reranked
 
     def _build_prompt(self, question: str, contexts: list[dict]) -> str:
