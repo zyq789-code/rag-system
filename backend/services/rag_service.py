@@ -7,6 +7,7 @@ from integrations.vector_store import VectorStore
 from integrations.reranker import Reranker
 from schemas.chat import SourceCitation
 from core.config import Settings
+from services.bm25 import get_bm25, tokenize
 
 SYSTEM_PROMPT = """你是一个智能知识库问答助手。根据提供的文档内容回答用户问题。
 
@@ -65,22 +66,17 @@ class RAGService:
         return passages
 
     async def _bm25_search(self, query: str, kb_id: str | None) -> list[dict]:
-        """BM25 关键词检索"""
-        from rank_bm25 import BM25Okapi
-
-        all_texts = await self.vector_store.get_all_texts()
-        if not all_texts:
+        """BM25 关键词检索（jieba 中文分词 + 索引缓存）"""
+        texts, bm25 = await get_bm25(self.vector_store)
+        if not texts or bm25 is None:
             return []
 
-        tokenized_corpus = [t["text"].split() for t in all_texts]
-        bm25 = BM25Okapi(tokenized_corpus)
-
-        tokenized_query = query.split()
+        tokenized_query = tokenize(query)
         if not tokenized_query:
             return []
 
         scores = bm25.get_scores(tokenized_query)
-        top_n = min(self.settings.top_k_vector, len(scores))
+        top_n = min(self.settings.top_k_bm25, len(scores))
 
         # 按 BM25 得分取 top
         indexed = sorted(
@@ -91,7 +87,7 @@ class RAGService:
 
         passages = []
         for idx, score in indexed:
-            t = all_texts[idx]
+            t = texts[idx]
             if kb_id:
                 meta_kb = t.get("metadata", {}).get("knowledge_base_id")
                 if meta_kb and meta_kb != kb_id:

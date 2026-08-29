@@ -1,0 +1,6 @@
+-r requirements.txt
+
+# 测试依赖（requirements.txt 不含，需单独安装）
+pytest==8.3.4
+pytest-asyncio==0.25.3
+aiosqlite==0.20.0

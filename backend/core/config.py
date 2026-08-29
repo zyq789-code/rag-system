@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
     # Embedding
     embedding_model: str = "BAAI/bge-small-zh-v1.5"
-    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    reranker_model: str = "maidalun1020/bce-reranker-base_v1"
 
     # App
     upload_dir: str = "./uploads"

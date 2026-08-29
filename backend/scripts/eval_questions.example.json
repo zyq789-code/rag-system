@@ -1,0 +1,8 @@
+{
+    "_说明": "复制为 eval_questions.json，按你的真实知识库替换问题与期望来源。filename 精确匹配 metadata.filename，keyword 匹配文本包含。",
+    "questions": [
+        {"question": "什么是检索增强生成？", "expected": {"filename": "rag_intro.pdf"}},
+        {"question": "系统支持哪些文件格式上传？", "expected": {"keyword": "PDF"}},
+        {"question": "分布式事务怎么保证一致性？", "expected": {"keyword": "分布式事务"}}
+    ]
+}
