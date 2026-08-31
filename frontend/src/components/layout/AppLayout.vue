@@ -1,7 +1,7 @@
 <template>
   <div class="flex h-screen overflow-hidden">
     <SideNav />
-    <main class="flex-1 overflow-auto bg-[var(--color-bg)] pb-16 md:pb-0">
+    <main class="flex-1 overflow-auto bg-[var(--color-bg)] pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
