@@ -65,7 +65,7 @@
 
     <!-- 预览弹窗 -->
     <div v-if="previewDoc" class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50" @click.self="previewDoc = null">
-      <div class="bg-white rounded-2xl w-[720px] max-h-[80vh] flex flex-col shadow-2xl m-4 overflow-hidden">
+      <div class="bg-white rounded-2xl w-full md:w-[720px] max-h-[80vh] flex flex-col shadow-2xl m-4 overflow-hidden">
         <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h3 class="font-semibold text-gray-800 truncate flex items-center gap-2">
             <FileText class="w-4 h-4 text-indigo-500" />

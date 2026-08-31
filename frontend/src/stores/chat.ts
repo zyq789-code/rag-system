@@ -9,6 +9,8 @@ export const useChatStore = defineStore('chat', () => {
   const currentConversationId = ref<string | null>(null)
   const messages = ref<Message[]>([])
   const isLoading = ref(false)
+  // 手机端对话历史抽屉开关
+  const mobileHistoryOpen = ref(false)
   const { isStreaming, error, sendMessage: streamSend } = useStreaming()
 
   async function loadConversations() {
@@ -56,8 +58,13 @@ export const useChatStore = defineStore('chat', () => {
     messages.value = []
   }
 
+  function toggleMobileHistory() {
+    mobileHistoryOpen.value = !mobileHistoryOpen.value
+  }
+
   return {
     conversations, currentConversationId, messages, isLoading, isStreaming, error,
+    mobileHistoryOpen, toggleMobileHistory,
     loadConversations, loadMessages, send, removeConversation, clearChat,
   }
 })

@@ -1,5 +1,5 @@
 <template>
-  <div ref="scrollRef" class="flex-1 overflow-y-auto px-6 py-6">
+  <div ref="scrollRef" class="flex-1 overflow-y-auto px-4 md:px-6 py-6">
     <div class="max-w-3xl mx-auto space-y-6">
       <div v-for="(msg, i) in messages" :key="i" class="flex gap-4" :class="msg.role === 'user' ? 'flex-row-reverse' : ''">
         <!-- 头像 -->
@@ -15,7 +15,7 @@
         </div>
 
         <!-- 内容 -->
-        <div class="max-w-[75%] space-y-2">
+        <div class="max-w-[85%] sm:max-w-[75%] space-y-2">
           <div
             :class="[
               'rounded-2xl px-4 py-3 leading-relaxed',

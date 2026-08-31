@@ -20,7 +20,7 @@
         <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
         技能评估
       </h3>
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div v-for="skill in result.skills" :key="skill.name" class="flex items-center justify-between px-4 py-2.5 bg-gray-50 rounded-lg">
           <span class="text-sm font-medium text-gray-700">{{ skill.name }}</span>
           <span :class="[
@@ -34,7 +34,7 @@
     </div>
 
     <!-- 优势与待提升 -->
-    <div class="grid grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div v-if="result.strengths?.length" class="card p-6 border-l-4 border-l-emerald-400">
         <h3 class="font-semibold text-emerald-700 mb-3 flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>

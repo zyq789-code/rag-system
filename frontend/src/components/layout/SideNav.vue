@@ -1,5 +1,6 @@
 <template>
-  <aside class="w-64 flex-shrink-0 flex flex-col h-screen" style="background: var(--color-sidebar-bg)">
+  <!-- 桌面侧边栏（md 及以上） -->
+  <aside class="hidden md:flex w-64 flex-shrink-0 flex-col h-screen" style="background: var(--color-sidebar-bg)">
     <!-- Logo -->
     <div class="px-5 h-16 flex items-center gap-3 border-b border-white/10">
       <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
@@ -37,6 +38,23 @@
       </div>
     </div>
   </aside>
+
+  <!-- 手机底部导航（md 以下） -->
+  <nav
+    class="md:hidden fixed bottom-0 inset-x-0 z-40 flex bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+    style="padding-bottom: env(safe-area-inset-bottom)"
+  >
+    <router-link
+      v-for="item in navItems"
+      :key="item.path"
+      :to="item.path"
+      class="flex-1 flex flex-col items-center justify-center py-2.5 text-[11px] font-medium transition-colors"
+      :class="$route.path === item.path ? 'text-indigo-600' : 'text-gray-400'"
+    >
+      <component :is="item.icon" class="w-5 h-5 mb-0.5" />
+      <span>{{ item.label }}</span>
+    </router-link>
+  </nav>
 </template>
 
 <script setup lang="ts">
