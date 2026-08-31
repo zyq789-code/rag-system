@@ -9,9 +9,11 @@ echo "==> [1/4] 安装 Docker（阿里云镜像源）..."
 #   curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 
-echo "==> [2/4] 安装 Docker Compose 插件..."
+echo "==> [2/4] 安装 Docker Compose 插件 与 buildx..."
 apt-get update -y
 apt-get install -y docker-compose-plugin || apt-get install -y docker-compose-v2
+# buildx：新版 docker compose --build 依赖，缺失会告警回退到传统构建器
+apt-get install -y docker-buildx-plugin || true
 
 echo "==> [3/4] 配置 Docker 镜像加速（拉取 postgres/redis/chroma/python 等镜像更快）..."
 mkdir -p /etc/docker
