@@ -140,26 +140,32 @@ docker compose -f docker-compose.yml -f deploy/docker-compose.deploy.yml down -v
 
 ---
 
-## 附录：加访问口令（已内置，推荐开启）
+## 附录：开启 Basic Auth 访问口令（可选）
 
-给 nginx 加 Basic Auth，防陌生人白嫖 API Key。**部署覆盖文件已内置认证配置**（`deploy/nginx.auth.conf` + `frontend` 挂载），只需两步：
+本项目默认**无登录**，部署到公网后任何人可访问（会消耗你的 API Key 额度）。
+建议给 nginx 加一层 Basic Auth，只需三步：
 
-**① 服务器上创建口令文件**（提示输两次密码，账号 `demo` 密码自定）：
-
+**① 创建口令文件**：
 ```bash
 sudo apt-get install -y apache2-utils
-sudo htpasswd -c /etc/nginx/rag.htpasswd demo
+sudo mkdir -p /etc/nginx
+sudo htpasswd -c /etc/nginx/rag.htpasswd demo    # 账号 demo，密码自定
 ```
 
-> ⚠️ **必须在 `docker compose ... up` 之前执行**，否则 nginx 因找不到口令文件无法校验（页面 500）。
+**② 编辑 `deploy/docker-compose.deploy.yml`**，给 `frontend` 追加挂载（认证配置已备好 `deploy/nginx.auth.conf`）：
+```yaml
+  frontend:
+    restart: always
+    volumes:
+      - ./deploy/nginx.auth.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/nginx/rag.htpasswd:/etc/nginx/rag.htpasswd:ro
+```
 
-**② 正常部署即可**（认证自动生效）：
-
+**③ 重建前端容器生效**：
 ```bash
-docker compose -f docker-compose.yml -f deploy/docker-compose.deploy.yml up -d --build
+docker compose -f docker-compose.yml -f deploy/docker-compose.deploy.yml up -d --build frontend
 ```
 
-之后访问 `http://你的IP` 会先弹窗要求输入 `demo` 和密码；`/api` 接口同样受保护。
+之后访问 `http://你的IP` 会先弹窗要求输入 `demo` 和密码，`/api` 接口同样受保护。
 
-**想关闭口令**：删除 `deploy/docker-compose.deploy.yml` 里 `frontend` 整段，重新 `up -d frontend` 即可。
-**换密码**：`sudo htpasswd /etc/nginx/rag.htpasswd demo` 后 `docker compose ... restart frontend`。
+**关闭口令**：移除上面对 frontend 的挂载，重新 `up -d frontend`。
