@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.config import get_settings
 from core.logging import setup_logging
 from core.exceptions import AppError, app_error_handler
-from routers import health, documents, chat, knowledge, resume
+from routers import health, documents, chat, knowledge, resume, auth
 
 
 @asynccontextmanager
@@ -43,6 +43,7 @@ app.add_middleware(
 app.add_exception_handler(AppError, app_error_handler)
 
 app.include_router(health.router, prefix="/api")
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
 app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(knowledge.router, prefix="/api/knowledge-bases", tags=["knowledge"])

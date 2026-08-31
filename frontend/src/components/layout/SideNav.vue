@@ -32,9 +32,12 @@
 
     <!-- 底部 -->
     <div class="px-4 py-4 border-t border-white/10">
-      <div class="flex items-center gap-3 text-xs text-white/30">
-        <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-        <span>系统在线</span>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3 text-xs text-white/30 min-w-0">
+          <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></div>
+          <span class="truncate">{{ auth.username || '系统在线' }}</span>
+        </div>
+        <button @click="handleLogout" class="text-xs text-white/40 hover:text-white transition-colors flex-shrink-0 ml-2">退出</button>
       </div>
     </div>
   </aside>
@@ -58,7 +61,12 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { MessageSquare, FileText, BookOpen, User } from 'lucide-vue-next'
+import { useAuthStore } from '../../stores/auth'
+
+const router = useRouter()
+const auth = useAuthStore()
 
 const navItems = [
   { path: '/chat', label: '智能问答', icon: MessageSquare, color: 'indigo' },
@@ -66,6 +74,11 @@ const navItems = [
   { path: '/knowledge', label: '知识库', icon: BookOpen, color: 'violet' },
   { path: '/resume', label: '简历分析', icon: User, color: 'sky' },
 ]
+
+function handleLogout() {
+  auth.logout()
+  router.push('/login')
+}
 
 function getActiveBg(color: string) {
   const colors: Record<string, string> = {

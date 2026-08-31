@@ -5,11 +5,13 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db, async_session_factory
-from core.dependencies import get_llm_provider, get_embedding_service, get_vector_store, get_reranker
+from core.dependencies import get_llm_provider, get_embedding_service, get_vector_store, get_reranker, get_current_user
 from core.config import get_settings
+from core.exceptions import AppError
 from schemas.chat import ChatRequest, ConversationResponse, MessageResponse
 from services.rag_service import RAGService
 from models.conversation import Conversation, Message
+from models.user import User
 from repositories.conversation import ConversationRepository
 
 router = APIRouter()
@@ -31,15 +33,18 @@ async def chat_completions(
     request: ChatRequest,
     db: AsyncSession = Depends(get_db),
     rag: RAGService = Depends(_get_rag_service),
+    user: User = Depends(get_current_user),
 ):
     conv_repo = ConversationRepository(db)
     if request.conversation_id:
         conversation = await conv_repo.get_by_id(request.conversation_id)
         if not conversation:
-            conversation = Conversation(title=request.message[:50], kb_id=request.kb_id)
+            conversation = Conversation(title=request.message[:50], kb_id=request.kb_id, user_id=user.id)
             await conv_repo.create(conversation)
+        elif conversation.user_id != user.id:
+            raise AppError("无权访问该对话", status_code=403)
     else:
-        conversation = Conversation(title=request.message[:50], kb_id=request.kb_id)
+        conversation = Conversation(title=request.message[:50], kb_id=request.kb_id, user_id=user.id)
         await conv_repo.create(conversation)
 
     # 获取历史消息（不含当前问题）
@@ -97,9 +102,10 @@ async def chat_completions(
 async def list_conversations(
     skip: int = 0, limit: int = 50,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     conv_repo = ConversationRepository(db)
-    conversations = await conv_repo.get_all(skip, limit)
+    conversations = await conv_repo.get_all_for_user(user.id, skip, limit)
     result = []
     for conv in conversations:
         count = await conv_repo.get_message_count(conv.id)
@@ -114,8 +120,14 @@ async def list_conversations(
 async def get_messages(
     conversation_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     conv_repo = ConversationRepository(db)
+    conversation = await conv_repo.get_by_id(conversation_id)
+    if conversation is None:
+        raise AppError("对话不存在", status_code=404)
+    if conversation.user_id != user.id:
+        raise AppError("无权访问该对话", status_code=403)
     messages = await conv_repo.get_messages(conversation_id)
     return [MessageResponse.model_validate(m) for m in messages]
 
@@ -124,10 +136,13 @@ async def get_messages(
 async def delete_conversation(
     conversation_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     conv_repo = ConversationRepository(db)
     conv = await conv_repo.get_by_id(conversation_id)
     if conv is None:
-        return {"error": "Conversation not found"}
+        raise AppError("对话不存在", status_code=404)
+    if conv.user_id != user.id:
+        raise AppError("无权访问该对话", status_code=403)
     await conv_repo.delete(conv)
     return {"message": "Deleted"}

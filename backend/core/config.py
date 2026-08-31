@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     top_k_bm25: int = 20
     top_k_rerank: int = 5
 
+    # Auth (JWT 签名密钥，生产环境务必在 .env 设置随机值)
+    secret_key: str = "change-me-in-production"
+
     @property
     def database_url(self) -> str:
         return (

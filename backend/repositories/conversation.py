@@ -1,4 +1,5 @@
 import uuid
+from typing import Sequence
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from models.conversation import Conversation, Message
@@ -8,6 +9,18 @@ from repositories.base import BaseRepository
 class ConversationRepository(BaseRepository[Conversation]):
     def __init__(self, session: AsyncSession):
         super().__init__(Conversation, session)
+
+    async def get_all_for_user(
+        self, user_id: uuid.UUID, skip: int = 0, limit: int = 100
+    ) -> Sequence[Conversation]:
+        result = await self.session.execute(
+            select(Conversation)
+            .where(Conversation.user_id == user_id)
+            .order_by(Conversation.updated_at.desc())
+            .offset(skip)
+            .limit(limit)
+        )
+        return result.scalars().all()
 
     async def get_messages(self, conversation_id: uuid.UUID) -> list[Message]:
         result = await self.session.execute(

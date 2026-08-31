@@ -1,8 +1,16 @@
+from fastapi import Header, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.config import get_settings
+from core.database import get_db
+from core.exceptions import AppError
+from core.security import decode_access_token
 from integrations.llm.factory import create_llm_provider
 from integrations.embedding import EmbeddingService
 from integrations.vector_store import VectorStore
 from integrations.reranker import Reranker
+from models.user import User
+from repositories.user import UserRepository
 
 _settings = get_settings()
 _llm_provider = None
@@ -37,3 +45,19 @@ def get_reranker():
     if _reranker is None:
         _reranker = Reranker(_settings.reranker_model)
     return _reranker
+
+
+async def get_current_user(
+    authorization: str | None = Header(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """从 Authorization: Bearer <token> 解析当前登录用户；未登录/失效则 401。"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise AppError("未登录，请先登录", status_code=401)
+    user_id = decode_access_token(authorization[7:])
+    if user_id is None:
+        raise AppError("登录已过期，请重新登录", status_code=401)
+    user = await UserRepository(db).get_by_id(user_id)
+    if user is None:
+        raise AppError("用户不存在", status_code=401)
+    return user

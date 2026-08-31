@@ -322,11 +322,14 @@ CREATE TABLE resume_analyses (
 | GET | `/api/resume/{id}` | 分析结果 |
 | POST | `/api/resume/{id}/interview` | 生成面试题 |
 
-### 健康检查
+### 认证（JWT 登录）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/api/health` | 服务状态 |
+| POST | `/api/auth/register` | 注册（返回 token） |
+| POST | `/api/auth/login` | 登录（返回 token） |
+
+> 对话接口需要 `Authorization: Bearer <token>`，聊天记录按用户隔离。
 
 ## RAG 核心流水线
 
