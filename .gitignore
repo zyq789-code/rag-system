@@ -25,3 +25,4 @@ backend/uploads/*
 !backend/uploads/.gitkeep
 backend/logs/*.log
 backend/eval_results.csv
+.gstack/
