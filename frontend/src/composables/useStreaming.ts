@@ -18,9 +18,13 @@ export function useStreaming() {
     error.value = null
 
     try {
+      const token = localStorage.getItem('token')
       const response = await fetch('/api/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           message: content,
           conversation_id: conversationId || null,
