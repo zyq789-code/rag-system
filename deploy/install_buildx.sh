@@ -31,7 +31,8 @@ install_via_apt() {
 
 install_binary() {
   echo "==> apt 方式不可用，改用手动下载 buildx 二进制..."
-  local ver="${BUILDX_VERSION:-v0.14.1}"
+  # Compose 构建要求 buildx >= 0.17，默认取 0.17.1；可通过 BUILDX_VERSION 环境变量覆盖
+  local ver="${BUILDX_VERSION:-v0.17.1}"
   local arch="amd64"
   [ "$(uname -m)" = "aarch64" ] && arch="arm64"
   sudo mkdir -p /usr/lib/docker/cli-plugins || return 1
